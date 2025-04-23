@@ -13,7 +13,8 @@ const config = {
     }),
     paths: {
       base: ''
-    }
+    },
+    appDir: '_app' // Explicitly set to match SvelteKit default
   }
 };
 
