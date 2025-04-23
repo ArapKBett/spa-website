@@ -12,7 +12,7 @@ services:
     startCommand: gunicorn spa.wsgi:application
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9
+        value: 3.9.18  
       - key: DATABASE_URL
         sync: false
       - key: SECRET_KEY
