@@ -5,7 +5,18 @@ body {
   margin: 0;
 }
 
+/* Hover effect for buttons */
 button:hover {
   opacity: 0.9;
   transition: opacity 0.3s ease;
+}
+
+/* Ensure footer icons are visible */
+footer svg {
+  fill: white; /* Default white for visibility on dark background */
+  transition: fill 0.3s ease;
+}
+
+footer a:hover svg {
+  fill: #D4AF37; /* spaGold on hover */
 }
