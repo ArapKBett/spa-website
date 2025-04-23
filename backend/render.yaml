@@ -1,0 +1,39 @@
+databases:
+  - name: spa-db
+    databaseName: spa_db
+    user: spa_user
+services:
+  - type: web
+    name: spa-backend
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: gunicorn spa.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://your-frontend.onrender.com
+      - key: EMAIL_HOST
+        value: smtp.mailgun.org
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_HOST_USER
+        value: your-mailgun-user
+      - key: EMAIL_HOST_PASSWORD
+        value: your-mailgun-password
+      - key: STRIPE_SECRET_KEY
+        value: your-stripe-secret-key
+      - key: RENDER_EXTERNAL_HOSTNAME
+        sync: false
+      - key: FRONTEND_URL
+        value: https://your-frontend.onrender.com
