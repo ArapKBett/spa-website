@@ -1,0 +1,28 @@
+{
+  "name": "spa-frontend",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-static": "^3.0.0",
+    "@sveltejs/kit": "^2.0.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.31",
+    "svelte": "^4.2.7",
+    "tailwindcss": "^3.3.5",
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "@fullcalendar/core": "^6.1.10",
+    "@fullcalendar/daygrid": "^6.1.10",
+    "@fullcalendar/timegrid": "^6.1.10",
+    "@stripe/stripe-js": "^2.1.11",
+    "axios": "^1.6.2",
+    "svelte-routing": "^2.0.0"
+  },
+  "type": "module"
+}
