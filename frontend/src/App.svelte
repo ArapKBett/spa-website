@@ -6,6 +6,7 @@
   import Shop from './pages/Shop.svelte';
   import EmployeePortal from './pages/EmployeePortal.svelte';
   import Login from './components/Login.svelte';
+  import './App.css';
 </script>
 
 <main class="bg-spaNavy text-white min-h-screen">
@@ -20,12 +21,14 @@
     </ul>
   </nav>
   <Router>
-    <Route path="/" component={Home} />
-    <Route path="/booking" component={Booking} />
-    <Route path="/contact" component={Contact} />
-    <Route path="/shop" component={Shop} />
-    <Route path="/employee" component={EmployeePortal} />
-    <Route path="/login" component={Login} />
+    <div class="container mx-auto p-4">
+      <Route path="/" component={Home} />
+      <Route path="/booking" component={Booking} />
+      <Route path="/contact" component={Contact} />
+      <Route path="/shop" component={Shop} />
+      <Route path="/employee" component={EmployeePortal} />
+      <Route path="/login" component={Login} />
+    </div>
   </Router>
   <footer class="bg-spaNavy animated-bg py-8">
     <div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
