@@ -2,14 +2,17 @@
   import axios from 'axios';
   let email = '';
   let message = '';
+  let error = '';
 
   async function handleSubmit() {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/subscribe/`, { email });
-      message = response.data.message;
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/subscribers/`, { email });
+      message = 'Thank you for subscribing!';
+      error = '';
       email = '';
-    } catch (error) {
-      message = 'Error subscribing. Please try again.';
+    } catch (err) {
+      error = 'Failed to subscribe. Please try again.';
+      message = '';
     }
   }
 </script>
@@ -19,11 +22,16 @@
     type="email"
     bind:value={email}
     placeholder="Enter your email"
-    class="p-2 rounded-md border border-spaNavy text-spaNavy"
     required
+    class="p-2 rounded text-black"
   />
-  <button type="submit" class="bg-spaGold text-white p-2 rounded-md">Subscribe</button>
+  <button type="submit" class="bg-spaGold text-white p-2 rounded hover:bg-opacity-90">
+    Subscribe
+  </button>
   {#if message}
-    <p>{message}</p>
+    <p class="text-green-400">{message}</p>
+  {/if}
+  {#if error}
+    <p class="text-red-400">{error}</p>
   {/if}
 </form>
