@@ -1,19 +1,17 @@
-import environ
-import os
-import dj_database_url
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
-env = environ.Env()
-environ.Env.read_env()
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Security
-SECRET_KEY = env('SECRET_KEY')
-DEBUG = env.bool('DEBUG', default=False)
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', env('RENDER_EXTERNAL_HOSTNAME', default='')])
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-default-key')
 
-# Installed Apps
+DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
+
+ALLOWED_HOSTS = ['spa-backend.onrender.com', 'localhost', '127.0.0.1']
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -23,12 +21,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'spa',
+    'spa_app',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -37,6 +34,17 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    'https://spakling.onrender.com',
+    'http://localhost:5173',
+]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
 
 ROOT_URLCONF = 'spa.urls'
 
@@ -58,15 +66,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'spa.wsgi.application'
 
-# Database
 DATABASES = {
-    'default': dj_database_url.config(
-        default=env('DATABASE_URL', default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')),
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+    }
 }
 
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -82,38 +92,24 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
 LANGUAGE_CODE = 'en-us'
+
 TIME_ZONE = 'UTC'
+
 USE_I18N = True
+
 USE_TZ = True
 
-# Static files
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
-# CORS
-CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=['http://localhost:5173', env('FRONTEND_URL', default='')])
-
-# Email
-EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
-EMAIL_HOST = env('EMAIL_HOST', default='')  # Default to empty to avoid errors
-EMAIL_PORT = env.int('EMAIL_PORT', default=587)
-EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
-EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
-
-# REST Framework
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-}
-
-# Stripe
-STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='')
+STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@spaserenity.com')
+
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
