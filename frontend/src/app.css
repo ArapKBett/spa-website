@@ -5,15 +5,31 @@ body {
   margin: 0;
 }
 
+/* Tailwind classes */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom colors */
+.bg-spaNavy {
+  background-color: #1A2A44;
+}
+.text-spaGold {
+  color: #D4AF37;
+}
+.bg-spaGold {
+  background-color: #D4AF37;
+}
+
 /* Hover effect for buttons */
 button:hover {
   opacity: 0.9;
   transition: opacity 0.3s ease;
 }
 
-/* Ensure footer icons are visible */
+/* Footer icon styles */
 footer svg {
-  fill: white; /* Default white for visibility on dark background */
+  fill: white;
   transition: fill 0.3s ease;
 }
 
