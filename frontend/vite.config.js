@@ -15,12 +15,8 @@ export default defineConfig({
     },
   },
   build: {
-    rollupOptions: {
-      output: {
-        // Ensure all routes fallback to index.html
-        manualChunks: undefined,
-      },
-    },
+    outDir: 'build', // Output to build/ instead of dist/
+    emptyOutDir: true, // Clear build/ before building
   },
   base: '/', // Ensure correct base path for SPA
 });
