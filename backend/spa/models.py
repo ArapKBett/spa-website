@@ -33,10 +33,19 @@ class Employee(models.Model):
     def __str__(self):
         return self.user.username
 
+class CustomerProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    phone_number = models.CharField(max_length=15, blank=True)
+    address = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+
 class Booking(models.Model):
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    customer_email = models.EmailField()
+    customer = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -54,13 +63,13 @@ class Product(models.Model):
         return self.name
 
 class Order(models.Model):
-    customer_email = models.EmailField()
+    customer = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
     stripe_session_id = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     items = models.JSONField()  # Store cart items
 
     def __str__(self):
-        return f"Order {self.id} by {self.customer_email}"
+        return f"Order {self.id} by {self.customer.user.username}"
 
 class Paystub(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
