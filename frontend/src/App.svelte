@@ -6,7 +6,7 @@
   import Shop from './pages/Shop.svelte';
   import EmployeePortal from './pages/EmployeePortal.svelte';
   import Login from './components/Login.svelte';
-  import './App.css';
+  import './app.css';
 </script>
 
 <main class="bg-spaNavy text-white min-h-screen">
