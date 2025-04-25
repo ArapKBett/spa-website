@@ -4,10 +4,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        spaGold: '#D4AF37',
         spaNavy: '#1A2A44',
-      },
-    },
+        spaGold: '#D4AF37'
+      }
+    }
   },
-  plugins: [],
+  plugins: []
 };
