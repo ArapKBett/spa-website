@@ -1,120 +1,108 @@
+from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
-import stripe
 from django.conf import settings
-from .models import Subscriber, ContactMessage, Booking, Product, Order, CustomerProfile, Paystub, Employee
+import stripe
+from .models import Subscriber, ContactMessage, Service, Employee, Booking, Product, Order, Paystub, Availability, Special
 from .serializers import (
-    SubscriberSerializer, ContactSerializer, BookingSerializer, ProductSerializer,
-    CustomerProfileSerializer, PaystubSerializer, EmployeeSerializer
+    SubscriberSerializer, ContactMessageSerializer, ServiceSerializer, EmployeeSerializer,
+    BookingSerializer, ProductSerializer, OrderSerializer, PaystubSerializer,
+    AvailabilitySerializer, SpecialSerializer
 )
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
-class SubscribeView(APIView):
-    def post(self, request):
-        serializer = SubscriberSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            send_mail(
-                'Welcome to Our Spa!',
-                'Thank you for subscribing to our newsletter.',
-                'from@spa.com',
-                [serializer.validated_data['email']],
-                fail_silently=False,
-            )
-            return Response({'message': 'Subscribed successfully'}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class SubscriberCreateView(generics.CreateAPIView):
+    queryset = Subscriber.objects.all()
+    serializer_class = SubscriberSerializer
 
-class ContactView(APIView):
-    def post(self, request):
-        serializer = ContactSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            send_mail(
-                'New Contact Message',
-                f"From: {serializer.validated_data['name']}\nEmail: {serializer.validated_data['email']}\nMessage: {serializer.validated_data['message']}",
-                'from@spa.com',
-                ['admin@spa.com'],
-            )
-            return Response({'message': 'Message sent'}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class ContactMessageCreateView(generics.CreateAPIView):
+    queryset = ContactMessage.objects.all()
+    serializer_class = ContactMessageSerializer
 
-class BookingView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        bookings = Booking.objects.filter(customer=request.user)
-        serializer = BookingSerializer(bookings, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = BookingSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(customer=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class ProductView(APIView):
-    def get(self, request):
-        products = Product.objects.all()
-        serializer = ProductSerializer(products, many=True)
-        return Response(serializer.data)
-
-class CreateCheckoutSessionView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        order_id = request.data.get('order_id')
-        order = Order.objects.get(id=order_id, customer=request.user)
-        session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=[{
-                'price_data': {
-                    'currency': 'usd',
-                    'product_data': {'name': item.product.name},
-                    'unit_amount': int(item.product.price * 100),
-                },
-                'quantity': item.quantity,
-            } for item in order.orderitem_set.all ],
-            mode='payment',
-            success_url='http://localhost:5173/success',
-            cancel_url='http://localhost:5173/cancel',
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        send_mail(
+            subject=f"New Contact Message from {instance.name}",
+            message=f"Email: {instance.email}\nMessage: {instance.message}",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.DEFAULT_FROM_EMAIL],
         )
-        return Response({'sessionId': session.id})
 
-class ReferralView(APIView):
-    permission_classes = [IsAuthenticated]
+class ServiceListView(generics.ListAPIView):
+    queryset = Service.objects.all()
+    serializer_class = ServiceSerializer
 
+class EmployeeListView(generics.ListAPIView):
+    queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
+
+class BookingCreateView(generics.CreateAPIView):
+    queryset = Booking.objects.all()
+    serializer_class = BookingSerializer
+
+class ProductListView(generics.ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+class OrderCreateView(APIView):
     def post(self, request):
-        code = request.data.get('referral_code')
-        try:
-            referrer = CustomerProfile.objects.get(referral_code=code)
-            profile = CustomerProfile.objects.get(user=request.user)
-            profile.referred_by = referrer
-            profile.save()
-            return Response({'message': 'Referral applied'})
-        except CustomerProfile.DoesNotExist:
-            return Response({'error': 'Invalid code'}, status=status.HTTP_400_BAD_REQUEST)
-
-class PaystubView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        employee = Employee.objects.get(user=request.user)
-        paystubs = Paystub.objects.filter(employee=employee)
-        serializer = PaystubSerializer(paystubs, many=True)
-        return Response(serializer.data)
-
-class AvailabilityView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        employee = Employee.objects.get(user=request.user)
-        serializer = EmployeeSerializer(employee, data=request.data, partial=True)
+        serializer = OrderSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Availability updated'})
+            items = serializer.validated_data['items']
+            customer_email = serializer.validated_data['customer_email']
+            try:
+                line_items = [
+                    {
+                        'price_data': {
+                            'currency': 'usd',
+                            'product_data': {
+                                'name': item['name'],
+                            },
+                            'unit_amount': int(item['price'] * 100),
+                        },
+                        'quantity': item['quantity'],
+                    }
+                    for item in items
+                ]
+                session = stripe.checkout.Session.create(
+                    payment_method_types=['card'],
+                    line_items=line_items,
+                    mode='payment',
+                    success_url='https://spakling.onrender.com/shop',
+                    cancel_url='https://spakling.onrender.com/shop',
+                    customer_email=customer_email,
+                )
+                order = Order.objects.create(
+                    customer_email=customer_email,
+                    stripe_session_id=session.id,
+                    items=items
+                )
+                return Response({'session_id': session.id}, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PaystubListView(generics.ListAPIView):
+    queryset = Paystub.objects.all()
+    serializer_class = PaystubSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        employee = Employee.objects.get(user=self.request.user)
+        return Paystub.objects.filter(employee=employee)
+
+class AvailabilityCreateView(generics.CreateAPIView):
+    queryset = Availability.objects.all()
+    serializer_class = AvailabilitySerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        employee = Employee.objects.get(user=self.request.user)
+        serializer.save(employee=employee)
+
+class SpecialListView(generics.ListAPIView):
+    queryset = Special.objects.all()
+    serializer_class = SpecialSerializer
