@@ -1,8 +1,8 @@
 from django.urls import path
 from .views import (
     SubscriberCreateView, ContactMessageCreateView, ServiceListView, EmployeeListView,
-    BookingCreateView, ProductListView, OrderCreateView, PaystubListView,
-    AvailabilityCreateView, SpecialListView
+    CustomerProfileView, BookingCreateView, ProductListView, OrderCreateView,
+    PaystubListView, AvailabilityCreateView, SpecialListView
 )
 
 urlpatterns = [
@@ -10,6 +10,7 @@ urlpatterns = [
     path('contact/', ContactMessageCreateView.as_view(), name='contact-create'),
     path('services/', ServiceListView.as_view(), name='service-list'),
     path('employees/', EmployeeListView.as_view(), name='employee-list'),
+    path('profile/', CustomerProfileView.as_view(), name='customer-profile'),
     path('bookings/', BookingCreateView.as_view(), name='booking-create'),
     path('products/', ProductListView.as_view(), name='product-list'),
     path('orders/', OrderCreateView.as_view(), name='order-create'),
