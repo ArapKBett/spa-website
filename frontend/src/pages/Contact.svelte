@@ -2,7 +2,12 @@
   import ContactForm from '../components/ContactForm.svelte';
 </script>
 
-<div class="p-8">
-  <h2 class="text-2xl mb-4 text-center">Contact Us</h2>
+<section class="py-12 px-4 max-w-6xl mx-auto">
+  <h1 class="text-3xl font-bold mb-8">Contact Us</h1>
+  <p class="mb-8">We'd love to hear from you. Please fill out the form below.</p>
   <ContactForm />
-</div>
+</section>
+
+<svelte:head>
+  <title>Contact - Spa Serenity</title>
+</svelte:head>
