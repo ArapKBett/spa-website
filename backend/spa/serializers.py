@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Subscriber, ContactMessage, Service, Employee, Booking, Product, Order, Paystub, Availability, Special
+from .models import Subscriber, ContactMessage, Service, Employee, CustomerProfile, Booking, Product, Order, Paystub, Availability, Special
 from django.contrib.auth.models import User
 
 class SubscriberSerializer(serializers.ModelSerializer):
@@ -24,10 +24,17 @@ class EmployeeSerializer(serializers.ModelSerializer):
         model = Employee
         fields = ['id', 'user', 'bio']
 
+class CustomerProfileSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField()
+
+    class Meta:
+        model = CustomerProfile
+        fields = ['id', 'user', 'phone_number', 'address']
+
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
-        fields = ['service', 'employee', 'customer_email', 'start_time', 'end_time']
+        fields = ['service', 'employee', 'customer', 'start_time', 'end_time']
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
@@ -37,7 +44,7 @@ class ProductSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ['customer_email', 'items']
+        fields = ['customer', 'items']
 
 class PaystubSerializer(serializers.ModelSerializer):
     class Meta:
