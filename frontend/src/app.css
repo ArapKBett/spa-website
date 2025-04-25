@@ -30,9 +30,10 @@ button:hover {
 /* Footer icon styles */
 footer svg {
   fill: white;
-  transition: fill 0.3s ease;
+  transition: transform 0.3s ease, fill 0.3s ease;
 }
 
 footer a:hover svg {
   fill: #D4AF37; /* spaGold on hover */
+  transform: scale(1.1); /* Slight scale on hover */
 }
