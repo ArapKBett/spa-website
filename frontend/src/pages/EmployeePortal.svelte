@@ -1,41 +1,72 @@
 <script>
-  import { onMount } from 'svelte';
   import axios from 'axios';
-  let availability = { monday: '', tuesday: '', wednesday: '', thursday: '', friday: '' };
+  import { onMount } from 'svelte';
   let paystubs = [];
+  let availability = {};
+  let message = '';
+  let error = '';
 
-  onMount(async () => {
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/paystubs/`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-    });
-    paystubs = response.data;
-  });
+  async function fetchPaystubs() {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/paystubs/`);
+      paystubs = response.data;
+    } catch (err) {
+      console.error('Failed to fetch paystubs:', err);
+    }
+  }
 
   async function updateAvailability() {
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/availability/`, { availability }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/availability/`, {
+        availability
       });
-      alert('Availability updated');
-    } catch (error) {
-      alert('Error updating availability');
+      message = 'Availability updated successfully!';
+      error = '';
+    } catch (err) {
+      error = 'Failed to update availability. Please try again.';
+      message = '';
     }
   }
+
+  onMount(() => {
+    fetchPaystubs();
+    return () => {};
+  });
 </script>
 
-<div class="p-8">
-  <h2 class="text-2xl mb-4">Employee Portal</h2>
-  <h3 class="mb-2">Update Availability</h3>
-  <div class="flex flex-col gap-4 max-w-md">
-    <input type="text" bind:value={availability.monday} placeholder="Monday (e.g., 9:00-17:00)" class="p-2 rounded-md border text-spaNavy" />
-    <input type="text" bind:value={availability.tuesday} placeholder="Tuesday" class="p-2 rounded-md border text-spaNavy" />
-    <input type="text" bind:value={availability.wednesday} placeholder="Wednesday" class="p-2 rounded-md border text-spaNavy" />
-    <input type="text" bind:value={availability.thursday} placeholder="Thursday" class="p-2 rounded-md border text-spaNavy" />
-    <input type="text" bind:value={availability.friday} placeholder="Friday" class="p-2 rounded-md border text-spaNavy" />
-    <button on:click={updateAvailability} class="bg-spaGold text-white p-2 rounded-md">Update</button>
-  </div>
-  <h3 class="mt-6 mb-2">Paystubs</h3>
-  {#each paystubs as stub}
-    <p>{stub.date} - ${stub.amount}</p>
-  {/each}
-</div>
+<section class="py-12 px-4 max-w-6xl mx-auto">
+  <h1 class="text-3xl font-bold mb-8">Employee Portal</h1>
+  <h2 class="text-2xl font-bold mb-4">Paystubs</h2>
+  {#if paystubs.length > 0}
+    <ul class="list-disc pl-6">
+      {#each paystubs as paystub}
+        <li>Date: {paystub.date} - Amount: ${paystub.amount}</li>
+      {/each}
+    </ul>
+  {:else}
+    <p>No paystubs available.</p>
+  {/if}
+
+  <h2 class="text-2xl font-bold mt-8 mb-4">Update Availability</h2>
+  <form on:submit|preventDefault={updateAvailability} class="flex flex-col gap-4 max-w-md">
+    <input
+      type="text"
+      bind:value={availability.monday}
+      placeholder="Monday availability (e.g., 9AM-5PM)"
+      class="p-2 rounded text-black"
+    />
+    <button type="submit" class="bg-spaGold text-white p-2 rounded hover:bg-opacity-90">
+      Update Availability
+    </button>
+  </form>
+  {#if message}
+    <p class="text-green-400 mt-4">{message}</p>
+  {/if}
+  {#if error}
+    <p class="text-red-400 mt-4">{error}</p>
+  {/if}
+</section>
+
+<svelte:head>
+  <title>Employee Portal - Spa Serenity</title>
+</svelte:head>
