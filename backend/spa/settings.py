@@ -10,7 +10,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-default-key')
 
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['spa-backend.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['spa-backend-tg6t.onrender.com', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -21,7 +21,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'spa_app',
+    'spa',  # Use 'spa' instead of 'spa_app'
 ]
 
 MIDDLEWARE = [
