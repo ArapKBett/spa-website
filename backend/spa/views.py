@@ -5,11 +5,11 @@ from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
 from django.conf import settings
 import stripe
-from .models import Subscriber, ContactMessage, Service, Employee, Booking, Product, Order, Paystub, Availability, Special
+from .models import Subscriber, ContactMessage, Service, Employee, CustomerProfile, Booking, Product, Order, Paystub, Availability, Special
 from .serializers import (
     SubscriberSerializer, ContactMessageSerializer, ServiceSerializer, EmployeeSerializer,
-    BookingSerializer, ProductSerializer, OrderSerializer, PaystubSerializer,
-    AvailabilitySerializer, SpecialSerializer
+    CustomerProfileSerializer, BookingSerializer, ProductSerializer, OrderSerializer,
+    PaystubSerializer, AvailabilitySerializer, SpecialSerializer
 )
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -39,6 +39,14 @@ class EmployeeListView(generics.ListAPIView):
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
 
+class CustomerProfileView(generics.RetrieveUpdateAPIView):
+    queryset = CustomerProfile.objects.all()
+    serializer_class = CustomerProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return CustomerProfile.objects.get(user=self.request.user)
+
 class BookingCreateView(generics.CreateAPIView):
     queryset = Booking.objects.all()
     serializer_class = BookingSerializer
@@ -52,7 +60,7 @@ class OrderCreateView(APIView):
         serializer = OrderSerializer(data=request.data)
         if serializer.is_valid():
             items = serializer.validated_data['items']
-            customer_email = serializer.validated_data['customer_email']
+            customer = serializer.validated_data['customer']
             try:
                 line_items = [
                     {
@@ -73,10 +81,10 @@ class OrderCreateView(APIView):
                     mode='payment',
                     success_url='https://spakling.onrender.com/shop',
                     cancel_url='https://spakling.onrender.com/shop',
-                    customer_email=customer_email,
+                    customer_email=customer.user.email,
                 )
                 order = Order.objects.create(
-                    customer_email=customer_email,
+                    customer=customer,
                     stripe_session_id=session.id,
                     items=items
                 )
